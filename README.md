@@ -59,7 +59,7 @@ open CDP Cloudera Manager with 7180 port, Cloudera Manager->Replication->Peers
 
 ![width=800](/images/find_peers.jpg)
 
-Click Add Peer in Peers Page
+Click `Add Peer` in Peers Page
 
 ![width=800](/images/add_peer.jpg)
 
@@ -85,6 +85,15 @@ you can see the peer you just added it in Peer Page.
 
 ![width=800](/images/display_peer_info.jpg)
 
-#### Step 2:
+#### Step 2: Create Replication Policy for replicate CDH5 tables to CDP.
+
+open CDP Cloudera Manager with 7180 port, Cloudera Manager->Replication->Replication Policy
+
+![width=800](/images/cdp_open_replication_policy.jpg)
+
+Click `Create Replication Policy` Button in Replication Policies page. then choose Hive Replication Policy
+
+![width=800](/images/open_hive_replication_policy_manu.jpg)
+
 
 
