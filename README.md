@@ -15,7 +15,7 @@ Kerberos：No
 
 Sentry：No 
 
-main components: Yarn,HDFS,Hive,Hue,Impala,Kudu,Hbase 
+Main components: Yarn,HDFS,Hive,Hue,Impala,Kudu,Hbase 
 
 ![width=800](/images/CDH5_components.jpg)
 
@@ -31,3 +31,20 @@ Ranger : Yes
 
 Main components:Yarn,HDFS,hive,tez,impala, Hive on Tez,kudu,hbase,ranger
 
+
+#### Data preparation
+prepare CDH5 cluster data for migraion with https://github.com/wangxf2000/buildTestdata
+
+this github will initialize hive/kudu/hbase data.
+
+`default.test` is a text table.
+
+`default.test_orc` is an orc table.
+
+`default.test_parquet` is a parquet table.
+
+`default.test_kudu` is a kudu table.
+
+`default.hive_hbase_table` is a hbase table.
+
+![width=800](/images/cdh5_tables.jpg)
