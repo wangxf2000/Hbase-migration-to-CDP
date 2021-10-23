@@ -56,9 +56,13 @@ With step by step to migrate CDH5 to CDP. we focus on Hive table in this lab.
 
 #### Step 1: setup Replication Peers in CDP Cloudera Manager.
 open CDP Cloudera Manager with 7180 port, Cloudera Manager->Replication->Peers
+
 ![width=800](/images/find_peers.jpg)
+
 Click Add Peer in Peers Page
+
 ![width=800](/images/add_peer.jpg)
+
 Input add peer information in Add Peer.
 
 Peer Name:any name as your wish.
@@ -70,11 +74,15 @@ Peer Admin Username: CDH5 cluster's Cloudera Manager's username, need admin priv
 Peer Admin Password: CDH5 cluster's Cloudera Manager's password.
 
 ![width=800](/images/add_peer_info.jpg)
+
 Then click Add to test connectivity.
+
 ![width=800](/images/peer_test_connection.jpg)
+
 if successful, then click Close. else need to modify the peer info then test it again. 
 
 you can see the peer you just added it in Peer Page.
+
 ![width=800](/images/display_peer_info.jpg)
 
 #### Step 2:
