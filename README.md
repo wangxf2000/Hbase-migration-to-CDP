@@ -251,6 +251,9 @@ drop database testdata;
 
 you need to drop table first, then drop the database.
 
+
+![width=800](/images/drop_tables&databases.jpg)
+
 ### step 2:Preparing tables for migration
 login source cluster in shell.
 
@@ -258,6 +261,7 @@ Obtain the Hive Upgrade Check tool.Download the Hive Upgrade Check tool from the
 
 ```git clone https://github.com/dstreev/cloudera_upgrade_utils.git```
 
+![width=800](/images/get_hive_check_source.jpg)
 
 Follow instructions in the github readme to run the tool.
 The Hive Upgrade Check (v.2.3.5.6+) will create a yaml file (hsmm_<name>.yaml) identifying databases and tables that require attention.
