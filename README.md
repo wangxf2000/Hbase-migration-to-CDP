@@ -196,10 +196,15 @@ Run on Peer as Username:using default
 ![width=800](/images/hive_replication_policy_resource.jpg)
 
 Scheduler Pool – (Optional) Enter the name of a resource pool in the field. The value you enter is used by the MapReduce Service you specified when Cloudera Manager executes the MapReduce job for the replication. The job specifies the value using one of these properties:
-MapReduce – Fair scheduler: mapred.fairscheduler.pool
-MapReduce – Capacity scheduler: queue.name
-YARN – mapreduce.job.queuename
+
+  MapReduce – Fair scheduler: mapred.fairscheduler.pool
+
+  MapReduce – Capacity scheduler: queue.name
+
+  YARN – mapreduce.job.queuename
+
 Maximum Map Slots and Maximum Bandwidth – Limits for the number of map slots and for bandwidth per mapper. The default is 100 MB.
+
 Replication Strategy – Whether file replication should be static (the default) or dynamic. Static replication distributes file replication tasks among the mappers up front to achieve a uniform distribution based on file sizes. Dynamic replication distributes file replication tasks in small sets to the mappers, and as each mapper processes its tasks, it dynamically acquires and processes the next unallocated set of tasks.
 
 ##### Select the Advanced tab to specify an export location, modify the parameters of the MapReduce job that will perform the replication, and set other options. We use default in this lab. 
