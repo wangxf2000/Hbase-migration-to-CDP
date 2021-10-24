@@ -238,36 +238,4 @@ Now we finish Hive migrate from CDH5 to CDP lab.
 
 ### Reference: https://docs.cloudera.com/cdp-private-cloud-upgrade/latest/data-migration/topics/cdp-data-migration-replication-manager-to-cdp-data-center.html
 
-## Using CDP Hive on Tez tools to migrate hive data to CDP Base, this works on CDH5/CDH6/HDP3/Apache Hive.
-The Environment is the same as last lab.
-
-### Step 1: drop the target database and tables in CDP.
-drop the database and tables in hue.
-``` drop table testdata.test;
-drop table testdata.test_parquet;
-drop table testdata.test_orc;
-drop database testdata;
-```
-
-you need to drop table first, then drop the database.
-
-
-![width=800](/images/drop_tables&databases.jpg)
-
-### step 2:Preparing tables for migration
-login source cluster in shell.
-
-Obtain the Hive Upgrade Check tool.Download the Hive Upgrade Check tool from the Community-based github location.
-
-```git clone https://github.com/dstreev/cloudera_upgrade_utils.git```
-
-![width=800](/images/get_hive_check_source.jpg)
-
-Follow instructions in the github readme to run the tool.
-The Hive Upgrade Check (v.2.3.5.6+) will create a yaml file (hsmm_<name>.yaml) identifying databases and tables that require attention.
-Follow instructions in prompts from the Hive Upgrade Check tool to resolve problems with the tables.
-At a minimum, you must run the following processes described in the github readme:
-process ID 1 Table / Partition Location Scan - Missing Directories
-process id 3 Hive 3 Upgrade Checks - Managed Non-ACID to ACID Table Migrations
-
 
