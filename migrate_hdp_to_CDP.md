@@ -19,8 +19,10 @@ login source cluster in shell.
 
 Obtain the Hive Upgrade Check tool.Download the Hive Upgrade Check tool from the Community-based github location.
 
-```wget https://github.com/dstreev/cloudera_upgrade_utils/releases/download/2.3.6.6-SNAPSHOT/hive-sre-dist.tar.gz
-tar zxvf hive-sre-dist.tar.gz```
+```
+wget https://github.com/dstreev/cloudera_upgrade_utils/releases/download/2.3.6.6-SNAPSHOT/hive-sre-dist.tar.gz
+tar zxvf hive-sre-dist.tar.gz
+```
 
 ![width=800](/images/get_hive_check_source.jpg)
 
@@ -36,7 +38,8 @@ export HADOOP_USER_NAME=hdfs
 hdfs dfs -mkdir /user/root
 hdfs dfs -chown root:hadoop /user/root
 hive-sre-cli
-hive-sre```
+hive-sre
+```
 
 ![width=800](/images/check_hive_src_cli_work.jpg)
 ![width=800](/images/check_hive_src_cli_work2.jpg)
