@@ -102,19 +102,63 @@ Cloudera Manager will run Enable Snapshot Command and we can see Hive directory 
 
 ![width=800](/images/enable_snapshot_and_take_snapshot.jpg)
 
-Give Snapshot a Name then Click Ok, the cluster will build a snapshot for /user/hive/warehouse directory.
-
-![width=800](/images/give_snapshot_name.jpg)
-
-![width=800](/images/run_snapshot_command.jpg)
-
-So you can see the snapshot in File Browser page.
-
-![width=800](/images/hive_snapshot.jpg)
 
 If you can't see HDFS file Browser manu, you can use hdfs snapshot command to do it.
 
-#### Step 3: Create Replication Policy for replicate CDH5 tables to CDP.
+#### step 3: Replicating from unsecure to secure clusters
+To enable replication from an unsecure cluster to a secure cluster, you need a user that exists on all the hosts on both the source cluster and destination cluster. Specify this user in the Run As Username field when you create a replication schedule.
+
+On a host in the source or destination cluster, the following command creates a user named milton:
+```sudo -u hdfs hdfs dfs -mkdir -p /user/etl_user```
+
+Set the permissions for the user directory ,the following command makes milton the owner of the milton directory:
+
+```sudo -u hdfs hdfs dfs -chown etl_user:hadoop /user/etl_user```
+
+Create the local user 'etl_user` in source cluster:
+
+```useradd -p `openssl passwd -1 -salt 'cloudera' cloudera` etl_user```
+
+Repeat this process for all hosts in the source and destination clusters so that the user and group exists on all of them.
+
+After you complete this process, specify the user you created in the Run As Username field when you create a replication policy.
+
+we do this step in `Data preparation` part.
+
+#### Step 4: Hive replication in dynamic environments
+To use Replication Manager for Hive replication in environments where the Hive Metastore changes, such as when a database or table gets created or deleted, additional configuration is needed.
+
+Open the Cloudera Manager Admin Console.
+
+Search for the HDFS Client Advanced Configuration Snippet (Safety Valve) for hdfs-site.xml property on the source cluster.
+
+Add the following properties:
+
+Name: replication.hive.ignoreDatabaseNotFound
+
+Value: true
+
+Name: replication.hive.ignoreTableNotFound
+
+value: true
+
+![width=800](/images/hive_replication_env.jpg)
+Save the changes.
+
+Restart the HDFS service.
+
+#### step 4: Provide hdfs user permission to "all-database, table, column" in hdfs under the Hadoop_SQL section in Ranger in CDP cluster
+Log in to Ranger Admin UI. the username and password maybe admin/BadPass#1
+
+![width=800](/images/ranger_admin_ui.jpg)
+
+Provide hdfs user permission to "all-database, table, column" in hdfs under the Hadoop_SQL section.
+
+![width=800](/images/ranger_hdfs_policy1.jpg)
+
+![width=800](/images/ranger_hdfs_policy.jpg)
+
+#### Step 5: Create Replication Policy for replicate CDH5 tables to CDP.
 
 open CDP Cloudera Manager with 7180 port, Cloudera Manager->Replication->Replication Policy
 
@@ -125,6 +169,7 @@ Click `Create Replication Policy` Button in Replication Policies page. then choo
 ![width=800](/images/open_hive_replication_policy_manu.jpg)
 
 Begin to Create Hive Replication Policy now. 
+
 ##### Select the General tab to configure the following:
 
 Use the `Name` field to provide a unique name for the replication policy.
@@ -167,9 +212,27 @@ The Replication Manager check the source cluster hdfs snapshots whether enabled.
 
 ![width=800](/images/create_replication_policy_confirm.jpg)
 
-Click OK button. The cluster will run the replication job.
+Click OK button. 
 
-![width=800](/images/cdp_replication_command_running.jpg)
+we can see several manu in replication policies job, like dry run,run now and so on.
 
+![width=800](/images/job_run_manu.jpg)
 
+you can dry run first to check whether it works.
+
+![width=800](/images/dry_run_replication_job.jpg)
+
+Then you can click run now button to run it now. The cluster will run the replication job.
+
+![width=800](/images/run_replication_job.jpg)
+
+![width=800](/images/run_replication_job_completely.jpg)
+
+Now we can check the replication result.
+
+![width=800](/images/check_replication_table_list.jpg)
+
+![width=800](/images/check_replication_table_records.jpg)
+
+Now we finish Hive migrate from CDH5 to CDP lab.
 
