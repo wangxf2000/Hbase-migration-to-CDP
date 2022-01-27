@@ -1,6 +1,6 @@
-# hive-migration-to-CDP
+# HBase-migration-to-CDP
 
-## Using CDP Replication Manager to migrate hive data from CDH5 to CDP Base
+## Using Hbase Snapshot & replication to migrate hbase data from CDH5 to CDP Base
 
 ### Environment
 #### Source Cluster
@@ -15,12 +15,12 @@ Kerberos：No
 
 Sentry：No 
 
-Main components: Yarn,HDFS,Hive,Hue,Impala,Kudu,Hbase 
+Main components: Yarn,HDFS,Hbase,Hue,Impala,Kudu,Hbase 
 
 ![width=800](/images/CDH5_components.jpg)
 
 #### Target Cluster
-##### deploy CDP7 base cluster using https://github.com/wangxf2000/OneNodeCDPCluster ，this cluster also with CDP license for using replication manager.
+##### deploy CDP7 base cluster using https://github.com/wangxf2000/OneNodeCDPCluster.
 Cloudera Manager ：7.4.4 
 
 Cloudera Runtime : 7.1.7 
@@ -35,212 +35,30 @@ Main components:Yarn,HDFS,hive,tez,impala, Hive on Tez,kudu,hbase,ranger
 
 
 ### Data preparation
-prepare CDH5 cluster data for migraion with https://github.com/wangxf2000/buildTestdata
+Use HBase's PerformanceEvaluation to generate a table in SNAPPY format
+hbase org.apache.hadoop.hbase.PerformanceEvaluation --compress=SNAPPY --size=1 sequentialWrite 10
+check the HBase table info and size
+```hbase(main):003:0> desc 'TestTable'
+Table TestTable is ENABLED
+TestTable
+COLUMN FAMILIES DESCRIPTION
+{NAME => 'info', BLOOMFILTER => 'ROW', VERSIONS => '1', IN_MEMORY => 'false', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => '
+FOREVER', COMPRESSION => 'SNAPPY', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
+1 row(s) in 0.0530 seconds ```
 
-this github will initialize hive/kudu/hbase data.
+![width=800](/images/source_hbase_table_desc.png)
 
-```default.test``` is a text table.
 
-```default.test_orc``` is an orc table.
+check the Hbase table size 
+```hadoop fs -du -h /hbase/data/default/
+257.5 M  257.5 M  /hbase/data/default/TestTable
+```
 
-```default.test_parquet``` is a parquet table.
-
-```default.test_kudu``` is a kudu table.
-
-```default.hive_hbase_table``` is a hbase table.
-
-![width=800](/images/cdh5_tables.jpg)
+![width=800](/images/source_hbase_table_size.png)
 
 ### CDH5 migrate to CDP Lab
-With step by step to migrate CDH5 to CDP. we focus on Hive table in this lab.
+With step by step to migrate CDH5 to CDP. we focus on Hbase table in this lab.
 
-#### Step 1: setup Replication Peers in CDP Cloudera Manager.
-open CDP Cloudera Manager with 7180 port, Cloudera Manager->Replication->Peers
 
-![width=800](/images/find_peers.jpg)
-
-Click `Add Peer` in Peers Page
-
-![width=800](/images/add_peer.jpg)
-
-Input add peer information in Add Peer.
-
-`Peer Name`:any name as your wish.
-
-`Peer URL`: CDH5 cluster's Cloudera Manager's URL.
-
-`Peer Admin Username`: CDH5 cluster's Cloudera Manager's username, need admin privedge.
-
-`Peer Admin Password`: CDH5 cluster's Cloudera Manager's password.
-
-![width=800](/images/add_peer_info.jpg)
-
-Then click Add to test connectivity.
-
-![width=800](/images/peer_test_connection.jpg)
-
-if successful, then click Close. else need to modify the peer info then test it again. 
-
-you can see the peer you just added it in Peer Page.
-
-![width=800](/images/display_peer_info.jpg)
-
-#### Step 2: Enable HDFS snapshots on Hive Warehouse directory on source cluster.
-open CDH5 Cloudera Manager with 7180 port, Cloudera Manager-> Clusters-> Hive->Configuration, then find `hive.metastore.warehouse.dir` porperty. we'll enable `hive.metastore.warehouse.dir` value snapshots.
-
-![width=800](/images/cdh5_warehouse_dir.jpg)
-
-Cloudera Manager-> Clusters-> HDFS->File Browser to find `/user/hive/warehosue` directory
-
-![width=800](/images/hdfs_file_browser_hive.jpg)
-
-Click the `Enable Snapshots` button
-
-![width=800](/images/enable_hive_snapshots.jpg)
-
-Cloudera Manager will run Enable Snapshot Command and we can see Hive directory is enabled snapshots. Then we can Take Snapshot in File Browser.
-
-![width=800](/images/enable_snapshot_and_take_snapshot.jpg)
-
-
-If you can't see HDFS file Browser manu, you can use hdfs snapshot command to do it.
-
-#### step 3: Replicating from unsecure to secure clusters
-To enable replication from an unsecure cluster to a secure cluster, you need a user that exists on all the hosts on both the source cluster and destination cluster. Specify this user in the Run As Username field when you create a replication schedule.
-
-On a host in the source or destination cluster, the following command creates a user named milton:
-```sudo -u hdfs hdfs dfs -mkdir -p /user/etl_user```
-
-Set the permissions for the user directory ,the following command makes milton the owner of the milton directory:
-
-```sudo -u hdfs hdfs dfs -chown etl_user:hadoop /user/etl_user```
-
-Create the local user 'etl_user` in source cluster:
-
-```useradd -p `openssl passwd -1 -salt 'cloudera' cloudera` etl_user```
-
-Repeat this process for all hosts in the source and destination clusters so that the user and group exists on all of them.
-
-After you complete this process, specify the user you created in the Run As Username field when you create a replication policy.
-
-we do this step in `Data preparation` part.
-
-#### Step 4: Hive replication in dynamic environments
-To use Replication Manager for Hive replication in environments where the Hive Metastore changes, such as when a database or table gets created or deleted, additional configuration is needed.
-
-Open the Cloudera Manager Admin Console.
-
-Search for the HDFS Client Advanced Configuration Snippet (Safety Valve) for hdfs-site.xml property on the source cluster.
-
-Add the following properties:
-
-Name: replication.hive.ignoreDatabaseNotFound
-
-Value: true
-
-Name: replication.hive.ignoreTableNotFound
-
-value: true
-
-![width=800](/images/hive_replication_env.jpg)
-Save the changes.
-
-Restart the HDFS service.
-
-#### step 4: Provide hdfs user permission to "all-database, table, column" in hdfs under the Hadoop_SQL section in Ranger in CDP cluster
-Log in to Ranger Admin UI. the username and password maybe admin/BadPass#1
-
-![width=800](/images/ranger_admin_ui.jpg)
-
-Provide hdfs user permission to "all-database, table, column" in hdfs under the Hadoop_SQL section.
-
-![width=800](/images/ranger_hdfs_policy1.jpg)
-
-![width=800](/images/ranger_hdfs_policy.jpg)
-
-#### Step 5: Create Replication Policy for replicate CDH5 tables to CDP.
-
-open CDP Cloudera Manager with 7180 port, Cloudera Manager->Replication->Replication Policy
-
-![width=800](/images/cdp_open_replication_policy.jpg)
-
-Click `Create Replication Policy` Button in Replication Policies page. then choose Hive Replication Policy
-
-![width=800](/images/open_hive_replication_policy_manu.jpg)
-
-Begin to Create Hive Replication Policy now. 
-
-##### Select the General tab to configure the following:
-
-Use the `Name` field to provide a unique name for the replication policy.
-
-Use the `Source` drop-down list to select the cluster with the Hive service you want to replicate. default is the source you add in Peer.
-
-Use the `Destination` drop-down list to select the destination for the replication. default is this CDP cluster.
-
-Based on the type of destination cluster you plan to use, select Use HDFS Destination. we use blank in this lab.
-
-Permission: Do not import Sentry Permissions (Default)
-
-Database:uncheck ALL, then input default test[\w]+
-
-Run As Username: etl_user
-
-Run on Peer as Username:using default
-
-
-![width=800](/images/hive_replication_policy_general.jpg)
-
-##### Select the Resources tab to configure the following: we use default in this lab.
-
-![width=800](/images/hive_replication_policy_resource.jpg)
-
-Scheduler Pool – (Optional) Enter the name of a resource pool in the field. The value you enter is used by the MapReduce Service you specified when Cloudera Manager executes the MapReduce job for the replication. The job specifies the value using one of these properties:
-
-  MapReduce – Fair scheduler: mapred.fairscheduler.pool
-
-  MapReduce – Capacity scheduler: queue.name
-
-  YARN – mapreduce.job.queuename
-
-Maximum Map Slots and Maximum Bandwidth – Limits for the number of map slots and for bandwidth per mapper. The default is 100 MB.
-
-Replication Strategy – Whether file replication should be static (the default) or dynamic. Static replication distributes file replication tasks among the mappers up front to achieve a uniform distribution based on file sizes. Dynamic replication distributes file replication tasks in small sets to the mappers, and as each mapper processes its tasks, it dynamically acquires and processes the next unallocated set of tasks.
-
-##### Select the Advanced tab to specify an export location, modify the parameters of the MapReduce job that will perform the replication, and set other options. We use default in this lab. 
-
-![width=800](/images/hive_replication_policy_advance.jpg)
-
-Then Click `Save Policy` button to save policy.
-
-The Replication Manager check the source cluster hdfs snapshots whether enabled. and display a confirm dialog.
-
-![width=800](/images/create_replication_policy_confirm.jpg)
-
-Click OK button. 
-
-we can see several manu in replication policies job, like dry run,run now and so on.
-
-![width=800](/images/job_run_manu.jpg)
-
-you can dry run first to check whether it works.
-
-![width=800](/images/dry_run_replication_job.jpg)
-
-Then you can click run now button to run it now. The cluster will run the replication job.
-
-![width=800](/images/run_replication_job.jpg)
-
-![width=800](/images/run_replication_job_completely.jpg)
-
-Now we can check the replication result.
-
-![width=800](/images/check_replication_table_list.jpg)
-
-![width=800](/images/check_replication_table_records.jpg)
-
-Now we finish Hive migrate from CDH5 to CDP lab.
-
-### Reference: https://docs.cloudera.com/cdp-private-cloud-upgrade/latest/data-migration/topics/cdp-data-migration-replication-manager-to-cdp-data-center.html
 
 
